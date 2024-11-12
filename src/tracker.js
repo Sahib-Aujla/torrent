@@ -33,7 +33,8 @@ module.exports.getPeers = (torrent, callback) => {
       console.log({ connResp });
       const announceReq = buildAnnounceReq(connResp.connectionId, torrent);
       console.log({ announceReq });
-      udpSend(socket, announceReq, trackers[0]);
+      trackers.forEach(url=> udpSend(socket, announceReq,url))
+     
       console.log("here2");
     } else if (respType(response) === "announce") {
       // 4. parse announce response
