@@ -1,15 +1,7 @@
-const tracker = require("./src/tracker");
 const torrentParser = require("./src/torrent-parser");
-
-const torrent = torrentParser.open("resume.torrent");
+const download = require("./src/download");
+if (process.argv.length != 3) throw new Error("Please provide three arguments");
+const torrent = torrentParser.open(process.argv[2]);
 
 console.log(torrent);
-let Peers=[];
-tracker.getPeers(torrent, (peers) => {
-  console.log('here')
-  console.log("list of peers: ", peers);
-  if(peers)peers.forEach(p=>Peers.push(p));
-  console.log(Peers);
-});
-
-
+download(torrent);
