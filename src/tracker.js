@@ -8,12 +8,7 @@ const trackers = [];
 module.exports.getPeers = (torrent, callback) => {
   const socket = dgram.createSocket("udp4");
   const urls = torrent["announce-list"];
-  //console.log(url);
-  // setInterval(function () {
-  //   udpSend(socket, buildConnReq(), url);
-  //   console.log(url);
 
-  // }, 10000);
   urls.forEach((url) => {
     const u = url.toString();
     if (u) {
@@ -21,31 +16,27 @@ module.exports.getPeers = (torrent, callback) => {
     }
   });
   socket.on("message", (response) => {
-    console.log("here9");
-    console.log(response);
     if (respType(response) === "connect") {
       // 2. receive and parse connect response
-      console.log(trackers);
+
       if (!trackers) return;
 
       const connResp = parseConnResp(response);
       // 3. send announce request
-      console.log({ connResp });
+
       const announceReq = buildAnnounceReq(connResp.connectionId, torrent);
-      console.log({ announceReq });
-      trackers.forEach(url=> udpSend(socket, announceReq,url))
-     
-      console.log("here2");
+
+      trackers.forEach((url) => udpSend(socket, announceReq, url));
     } else if (respType(response) === "announce") {
       // 4. parse announce response
       const announceResp = parseAnnounceResp(response);
-      console.log("here4");
+      if (!announceResp) return;
 
       // 5. pass peers to callback
       callback(announceResp.peers);
     }
   });
-  console.log({ trackers });
+
   socket.on("error", (e) => console.log("error: " + e));
 };
 
@@ -57,15 +48,12 @@ function udpSend(
     if (err) console.error("Send error:", err);
     else {
       trackers.push(rawUrl);
-      console.log("jatt " + rawUrl);
     }
   }
 ) {
   const url = urlparse(rawUrl);
-  console.log(url);
-  socket.send(message, 0, message.length, url.port, url.hostname, callback);
 
-  console.log("here99");
+  socket.send(message, 0, message.length, url.port, url.hostname, callback);
 }
 
 function respType(resp) {
@@ -148,6 +136,7 @@ function parseAnnounceResp(resp) {
     }
     return groups;
   }
+  if (resp.length < 20) return;
 
   return {
     action: resp.readUInt32BE(0),
